@@ -304,10 +304,19 @@ function selectOption(button, answer) {
 }
 
 async function checkAnswer() {
-    if (!selectedAnswer) return;
+    if (!selectedAnswer) {
+        console.log('No answer selected');
+        return;
+    }
 
     const question = quizQuestions[currentQuestionIndex];
     const timeTaken = Math.round((Date.now() - startTime) / 1000);
+
+    console.log('Checking answer:', {
+        questionId: question.id,
+        selectedAnswer: selectedAnswer,
+        timeTaken: timeTaken
+    });
 
     // Disable all buttons
     document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
@@ -326,7 +335,12 @@ async function checkAnswer() {
             })
         });
 
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
+        console.log('Answer response:', data);
 
         if (data.success) {
             // Update current student data
@@ -340,21 +354,35 @@ async function checkAnswer() {
 
             // Show feedback
             showFeedback(data.isCorrect, data.correctAnswer, data.explanation, data.newBadges);
+        } else {
+            console.error('API returned failure:', data.error);
+            alert('Error: ' + (data.error || 'Failed to submit answer'));
+            // Re-enable buttons
+            document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = false);
+            document.getElementById('checkBtn').disabled = false;
         }
     } catch (error) {
         console.error('Error submitting answer:', error);
-        alert('Failed to submit answer. Please try again.');
+        alert('Failed to submit answer: ' + error.message);
+        // Re-enable buttons
+        document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = false);
+        document.getElementById('checkBtn').disabled = false;
     }
 }
 
 function showFeedback(isCorrect, correctAnswer, explanation, newBadges) {
+    console.log('Showing feedback:', { isCorrect, correctAnswer, explanation });
+
     const panel = document.getElementById('feedbackPanel');
     panel.classList.remove('hidden', 'correct', 'wrong');
     panel.classList.add(isCorrect ? 'correct' : 'wrong');
 
     // Highlight correct/wrong answer
     document.querySelectorAll('.option-btn').forEach(btn => {
-        if (btn.textContent === String(correctAnswer)) {
+        const btnText = btn.textContent.trim();
+        const correctAns = String(correctAnswer).trim();
+
+        if (btnText === correctAns) {
             btn.classList.add('correct');
         } else if (btn.classList.contains('selected') && !isCorrect) {
             btn.classList.add('wrong');
@@ -384,8 +412,14 @@ function showFeedback(isCorrect, correctAnswer, explanation, newBadges) {
 
     // Show new badges
     if (newBadges && newBadges.length > 0) {
+        console.log('New badges earned:', newBadges);
         // We'll show these on the results screen
     }
+
+    // Scroll feedback into view
+    setTimeout(() => {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
 }
 
 function nextQuestion() {
