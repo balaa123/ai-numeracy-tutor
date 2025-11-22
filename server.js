@@ -14,6 +14,7 @@ const {
     teacherOps
 } = require('./database');
 const aiEngine = require('./ai-engine');
+const teachingAgent = require('./teaching-agent');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -185,6 +186,128 @@ app.post('/api/questions/generate', async (req, res) => {
         const question = await aiEngine.generateQuestion(topic, difficulty, language);
         res.json({ success: true, question });
     } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============= AI AGENT ENDPOINTS =============
+
+// Get AI analysis for student
+app.get('/api/agent/analyze/:studentId', async (req, res) => {
+    try {
+        const student = studentOps.getById(req.params.studentId);
+        if (!student) {
+            return res.status(404).json({ success: false, error: 'Student not found' });
+        }
+
+        const progressHistory = progressOps.getByStudent(req.params.studentId);
+        const analysis = await teachingAgent.analyzeStudentPerformance(student, progressHistory);
+
+        res.json({ success: true, analysis });
+    } catch (error) {
+        console.error('Agent analysis error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get personalized learning path from Agent
+app.get('/api/agent/learning-path/:studentId', async (req, res) => {
+    try {
+        const student = studentOps.getById(req.params.studentId);
+        if (!student) {
+            return res.status(404).json({ success: false, error: 'Student not found' });
+        }
+
+        const progressHistory = progressOps.getByStudent(req.params.studentId);
+        const analysis = await teachingAgent.analyzeStudentPerformance(student, progressHistory);
+        const learningPath = await teachingAgent.generateLearningPath(student, analysis);
+
+        res.json({ success: true, learningPath, analysis });
+    } catch (error) {
+        console.error('Learning path error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get AI-selected personalized questions
+app.get('/api/agent/questions/:studentId', async (req, res) => {
+    try {
+        const student = studentOps.getById(req.params.studentId);
+        if (!student) {
+            return res.status(404).json({ success: false, error: 'Student not found' });
+        }
+
+        const progressHistory = progressOps.getByStudent(req.params.studentId);
+        const analysis = await teachingAgent.analyzeStudentPerformance(student, progressHistory);
+
+        // Get all available questions
+        const availableQuestions = questionOps.getByDifficulty(student.current_level, 50);
+
+        // Let agent select the best questions
+        const selectedQuestions = await teachingAgent.selectNextQuestions(student, analysis, availableQuestions);
+
+        res.json({ success: true, questions: selectedQuestions, analysis });
+    } catch (error) {
+        console.error('Agent question selection error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get coaching message from Agent
+app.post('/api/agent/coaching', async (req, res) => {
+    try {
+        const { studentId, questionId } = req.body;
+
+        const student = studentOps.getById(studentId);
+        if (!student) {
+            return res.status(404).json({ success: false, error: 'Student not found' });
+        }
+
+        const question = questionOps.getById(questionId);
+        const previousAnswers = answerOps.getByStudent(studentId).slice(0, 5);
+
+        const coachingMessage = await teachingAgent.provideStudentCoaching(
+            student,
+            question,
+            previousAnswers,
+            student.language
+        );
+
+        res.json({ success: true, message: coachingMessage });
+    } catch (error) {
+        console.error('Coaching error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get teacher insights from Agent
+app.get('/api/agent/teacher-insights', async (req, res) => {
+    try {
+        const students = teacherOps.getAllStudentsOverview();
+        const insights = await teachingAgent.generateTeacherInsights(students);
+
+        res.json({ success: true, insights });
+    } catch (error) {
+        console.error('Teacher insights error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Generate teacher alert from Agent
+app.post('/api/agent/alert', async (req, res) => {
+    try {
+        const { studentId, issue } = req.body;
+
+        const student = studentOps.getById(studentId);
+        if (!student) {
+            return res.status(404).json({ success: false, error: 'Student not found' });
+        }
+
+        const alert = await teachingAgent.generateTeacherAlert(student, issue);
+
+        res.json({ success: true, alert });
+    } catch (error) {
+        console.error('Alert generation error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
