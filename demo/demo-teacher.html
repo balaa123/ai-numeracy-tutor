@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f7f7f7;
+            color: #333;
+        }
+
+        .demo-banner {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 2rem 0;
+        }
+
+        .logo {
+            padding: 0 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .logo h2 {
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-item {
+            padding: 1rem 2rem;
+            text-decoration: none;
+            color: #333;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(102, 126, 234, 0.15);
+            border-left-color: #667eea;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Students Table */
+        .students-table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+
+        .students-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .students-table thead {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .students-table th,
+        .students-table td {
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .students-table tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .students-table tbody tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .status-badge.excellent {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-badge.good {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-badge.needs-help {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .btn-view {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Charts */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-card h3 {
+            margin-bottom: 1rem;
+        }
+
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="demo-banner">
+        📊 TEACHER DASHBOARD DEMO - No installation required! This is a preview with mock data.
+    </div>
+
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>👨‍🏫 Teacher Portal</h2>
+            </div>
+
+            <nav class="nav">
+                <div class="nav-item active" onclick="showSection('overview')">
+                    📊 Overview
+                </div>
+                <div class="nav-item" onclick="showSection('students')">
+                    👥 Students
+                </div>
+                <div class="nav-item" onclick="alert('Full version feature!')">
+                    📈 Reports
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <h1>Teacher Dashboard</h1>
+                <div>Demo Teacher</div>
+            </header>
+
+            <!-- Overview Section -->
+            <section id="overviewSection" class="section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div>
+                            <div class="stat-value">24</div>
+                            <div class="stat-label">Total Students</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">⭐</div>
+                        <div>
+                            <div class="stat-value">73%</div>
+                            <div class="stat-label">Average Score</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">🎯</div>
+                        <div>
+                            <div class="stat-value">18</div>
+                            <div class="stat-label">Active This Week</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">⚠️</div>
+                        <div>
+                            <div class="stat-value">3</div>
+                            <div class="stat-label">Need Attention</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Topic Performance</h3>
+                        <div class="chart-placeholder">
+                            📊 Chart showing performance across Addition, Subtraction, Multiplication, Division<br>
+                            (Available in full version with real data)
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h3>Student Progress Distribution</h3>
+                        <div class="chart-placeholder">
+                            🥧 Pie chart showing student distribution:<br>
+                            Excellent: 8 | Good: 10 | Needs Help: 4 | Struggling: 2<br>
+                            (Available in full version with real data)
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Students Section -->
+            <section id="studentsSection" class="section">
+                <h2 style="margin-bottom: 1.5rem;">All Students</h2>
+
+                <div class="students-table-container">
+                    <table class="students-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Grade</th>
+                                <th>Level</th>
+                                <th>Points</th>
+                                <th>Topics</th>
+                                <th>Avg Score</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Rahul Kumar</strong></td>
+                                <td>3</td>
+                                <td>4</td>
+                                <td>280</td>
+                                <td>4</td>
+                                <td>87%</td>
+                                <td><span class="status-badge excellent">Excellent</span></td>
+                                <td><button class="btn-view" onclick="viewStudent('Rahul Kumar')">View Details</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Priya Sharma</strong></td>
+                                <td>4</td>
+                                <td>3</td>
+                                <td>210</td>
+                                <td>4</td>
+                                <td>82%</td>
+                                <td><span class="status-badge excellent">Excellent</span></td>
+                                <td><button class="btn-view" onclick="viewStudent('Priya Sharma')">View Details</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Amit Patel</strong></td>
+                                <td>3</td>
+                                <td>2</td>
+                                <td>150</td>
+                                <td>3</td>
+                                <td>68%</td>
+                                <td><span class="status-badge good">Good</span></td>
+                                <td><button class="btn-view" onclick="viewStudent('Amit Patel')">View Details</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Sneha Reddy</strong></td>
+                                <td>2</td>
+                                <td>2</td>
+                                <td>120</td>
+                                <td>2</td>
+                                <td>52%</td>
+                                <td><span class="status-badge needs-help">Needs Help</span></td>
+                                <td><button class="btn-view" onclick="viewStudent('Sneha Reddy')">View Details</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Arjun Singh</strong></td>
+                                <td>3</td>
+                                <td>3</td>
+                                <td>190</td>
+                                <td>4</td>
+                                <td>75%</td>
+                                <td><span class="status-badge good">Good</span></td>
+                                <td><button class="btn-view" onclick="viewStudent('Arjun Singh')">View Details</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Kavya Nair</strong></td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>310</td>
+                                <td>4</td>
+                                <td>91%</td>
+                                <td><span class="status-badge excellent">Excellent</span></td>
+                                <td><button class="btn-view" onclick="viewStudent('Kavya Nair')">View Details</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionName + 'Section').classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function viewStudent(name) {
+            const details = {
+                'Rahul Kumar': {
+                    grade: 3,
+                    level: 4,
+                    points: 280,
+                    streak: 7,
+                    topics: 'Addition (95%), Subtraction (88%), Multiplication (82%), Division (85%)',
+                    gaps: 'No major learning gaps - performing well across all topics!',
+                    badges: 'First Step, Math Explorer, Math Champion, Perfect Five'
+                },
+                'Sneha Reddy': {
+                    grade: 2,
+                    level: 2,
+                    points: 120,
+                    streak: 2,
+                    topics: 'Addition (65%), Subtraction (45%)',
+                    gaps: '⚠️ SUBTRACTION - Average score: 45% - Needs practice',
+                    badges: 'First Step, Math Explorer'
+                }
+            };
+
+            const student = details[name] || details['Rahul Kumar'];
+
+            alert(`
+📊 Student Details: ${name}
+      
+Grade: ${student.grade}
+Level: ${student.level}
+Points: ${student.points}
+Streak: ${student.streak} days 🔥
+
+Topic Performance:
+${student.topics}
+
+Learning Gaps:
+${student.gaps}
+
+Achievements:
+${student.badges}
+
+(Full interactive view available in the complete version!)
+      `);
+        }
+    </script>
+</body>
+
+</html>

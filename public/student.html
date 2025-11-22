@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Learning Portal</title>
+    <link rel="stylesheet" href="css/student.css">
+</head>
+
+<body>
+    <!-- Student Selection Screen -->
+    <div id="studentSelect" class="screen active">
+        <div class="select-container">
+            <h1>👋 Welcome Back!</h1>
+            <p class="subtitle">Select your profile to continue learning</p>
+
+            <div id="studentList" class="student-list"></div>
+
+            <button class="btn-primary" onclick="showNewStudentForm()">
+                ➕ Create New Student
+            </button>
+
+            <div id="newStudentForm" class="new-student-form hidden">
+                <h3>Create Your Profile</h3>
+                <input type="text" id="studentName" placeholder="Your Name" required>
+                <select id="studentGrade">
+                    <option value="1">Grade 1</option>
+                    <option value="2">Grade 2</option>
+                    <option value="3" selected>Grade 3</option>
+                    <option value="4">Grade 4</option>
+                    <option value="5">Grade 5</option>
+                </select>
+                <select id="studentLanguage">
+                    <option value="en">English</option>
+                    <option value="hi">हिंदी (Hindi)</option>
+                    <option value="ta">தமிழ் (Tamil)</option>
+                    <option value="te">తెలుగు (Telugu)</option>
+                </select>
+                <button class="btn-success" onclick="createStudent()">Create Profile</button>
+                <button class="btn-secondary" onclick="hideNewStudentForm()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Learning Dashboard -->
+    <div id="dashboard" class="screen">
+        <div class="header">
+            <div class="user-info">
+                <div class="avatar">👤</div>
+                <div>
+                    <h2 id="studentNameDisplay"></h2>
+                    <div class="language-selector">
+                        <select id="languageSwitch" onchange="changeLanguage()">
+                            <option value="en">English</option>
+                            <option value="hi">हिंदी</option>
+                            <option value="ta">தமிழ்</option>
+                            <option value="te">తెలుగు</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat">
+                    <span class="stat-icon">⭐</span>
+                    <div>
+                        <div class="stat-label" data-translate="points">Points</div>
+                        <div class="stat-value" id="totalPoints">0</div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <span class="stat-icon">🔥</span>
+                    <div>
+                        <div class="stat-label" data-translate="streak">Streak</div>
+                        <div class="stat-value" id="streakDays">0</div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <span class="stat-icon">🏆</span>
+                    <div>
+                        <div class="stat-label" data-translate="level">Level</div>
+                        <div class="stat-value" id="currentLevel">1</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="content">
+            <div class="progress-section">
+                <h3 data-translate="your_progress">Your Progress</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p class="progress-text" id="progressText">Keep going! 🎯</p>
+            </div>
+
+            <div class="topics-grid">
+                <div class="topic-card" onclick="startPractice('addition')">
+                    <div class="topic-icon">➕</div>
+                    <h3 data-translate="addition">Addition</h3>
+                    <div class="topic-level">Level <span id="additionLevel">1</span></div>
+                    <button class="btn-practice" data-translate="practice">Practice</button>
+                </div>
+
+                <div class="topic-card" onclick="startPractice('subtraction')">
+                    <div class="topic-icon">➖</div>
+                    <h3 data-translate="subtraction">Subtraction</h3>
+                    <div class="topic-level">Level <span id="subtractionLevel">1</span></div>
+                    <button class="btn-practice" data-translate="practice">Practice</button>
+                </div>
+
+                <div class="topic-card" onclick="startPractice('multiplication')">
+                    <div class="topic-icon">✖️</div>
+                    <h3 data-translate="multiplication">Multiplication</h3>
+                    <div class="topic-level">Level <span id="multiplicationLevel">1</span></div>
+                    <button class="btn-practice" data-translate="practice">Practice</button>
+                </div>
+
+                <div class="topic-card" onclick="startPractice('division')">
+                    <div class="topic-icon">➗</div>
+                    <h3 data-translate="division">Division</h3>
+                    <div class="topic-level">Level <span id="divisionLevel">1</span></div>
+                    <button class="btn-practice" data-translate="practice">Practice</button>
+                </div>
+            </div>
+
+            <div class="achievements-section">
+                <h3 data-translate="achievements">🏅 Achievements</h3>
+                <div id="badgesList" class="badges-list">
+                    <div class="badge-placeholder">Complete exercises to earn badges!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Screen (Duolingo Style) -->
+    <div id="quizScreen" class="screen">
+        <div class="quiz-header">
+            <button class="btn-close" onclick="exitQuiz()">✕</button>
+            <div class="quiz-progress-bar">
+                <div class="quiz-progress-fill" id="quizProgressFill"></div>
+            </div>
+            <div class="quiz-counter" id="quizCounter">1/5</div>
+        </div>
+
+        <div class="quiz-content">
+            <div class="question-section">
+                <div class="question-topic" id="questionTopic"></div>
+                <h2 class="question-text" id="questionText"></h2>
+
+                <div id="optionsContainer" class="options-container"></div>
+
+                <div class="quiz-actions">
+                    <button class="btn-hint" id="hintBtn" onclick="getHint()">
+                        💡 <span data-translate="hint">Hint</span>
+                    </button>
+                    <button class="btn-check" id="checkBtn" onclick="checkAnswer()" disabled>
+                        <span data-translate="check">Check</span>
+                    </button>
+                </div>
+
+                <div id="hintBox" class="hint-box hidden"></div>
+            </div>
+
+            <!-- Feedback Panel -->
+            <div id="feedbackPanel" class="feedback-panel hidden">
+                <div class="feedback-content">
+                    <div id="feedbackIcon" class="feedback-icon"></div>
+                    <h3 id="feedbackTitle"></h3>
+                    <p id="feedbackMessage"></p>
+                    <div id="explanationBox" class="explanation-box hidden"></div>
+                    <button class="btn-continue" onclick="nextQuestion()">
+                        <span data-translate="continue">Continue</span> →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="resultsScreen" class="screen">
+        <div class="results-container">
+            <div class="results-animation">
+                <div class="trophy">🏆</div>
+                <div class="confetti"></div>
+            </div>
+
+            <h1 data-translate="great_job">Great Job!</h1>
+
+            <div class="results-stats">
+                <div class="result-stat">
+                    <div class="result-value" id="finalScore">0/5</div>
+                    <div class="result-label" data-translate="correct">Correct</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-value" id="pointsEarned">+0</div>
+                    <div class="result-label" data-translate="points_earned">Points Earned</div>
+                </div>
+            </div>
+
+            <div id="newBadges" class="new-badges-section hidden">
+                <h3 data-translate="new_badges">🎉 New Badges Earned!</h3>
+                <div id="newBadgesList" class="new-badges-list"></div>
+            </div>
+
+            <div class="results-actions">
+                <button class="btn-primary" onclick="backToDashboard()">
+                    <span data-translate="back_to_dashboard">Back to Dashboard</span>
+                </button>
+                <button class="btn-secondary" onclick="practiceAgain()">
+                    <span data-translate="practice_again">Practice Again</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/translations.js"></script>
+    <script src="js/student.js"></script>
+</body>
+
+</html>

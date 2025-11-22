@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard</title>
+    <link rel="stylesheet" href="css/teacher.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>👨‍🏫 Teacher Portal</h2>
+            </div>
+
+            <nav class="nav">
+                <a href="#" class="nav-item active" onclick="showSection('overview')">
+                    📊 Overview
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('students')">
+                    👥 Students
+                </a>
+                <a href="/" class="nav-item">
+                    ← Back to Home
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <h1>Teacher Dashboard</h1>
+                <div class="teacher-info">
+                    <span>Demo Teacher</span>
+                    <div class="avatar">👨‍🏫</div>
+                </div>
+            </header>
+
+            <!-- Overview Section -->
+            <section id="overviewSection" class="section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="totalStudents">0</div>
+                            <div class="stat-label">Total Students</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="avgScore">0%</div>
+                            <div class="stat-label">Average Score</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="activeStudents">0</div>
+                            <div class="stat-label">Active This Week</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="strugglingStudents">0</div>
+                            <div class="stat-label">Need Attention</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Topic Performance</h3>
+                        <canvas id="topicChart"></canvas>
+                    </div>
+
+                    <div class="chart-card">
+                        <h3>Student Progress Distribution</h3>
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Students Section -->
+            <section id="studentsSection" class="section">
+                <div class="section-header">
+                    <h2>All Students</h2>
+                    <input type="text" id="searchInput" placeholder="Search students..." onkeyup="filterStudents()">
+                </div>
+
+                <div class="students-table-container">
+                    <table class="students-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Grade</th>
+                                <th>Level</th>
+                                <th>Points</th>
+                                <th>Topics Attempted</th>
+                                <th>Avg Score</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <tr>
+                                <td colspan="8" class="loading">Loading students...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Student Detail Modal -->
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalStudentName"></h2>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="student-summary">
+                    <div class="summary-item">
+                        <span class="summary-label">Grade:</span>
+                        <span class="summary-value" id="modalGrade"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Current Level:</span>
+                        <span class="summary-value" id="modalLevel"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Total Points:</span>
+                        <span class="summary-value" id="modalPoints"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Streak:</span>
+                        <span class="summary-value" id="modalStreak"></span>
+                    </div>
+                </div>
+
+                <div class="topic-performance">
+                    <h3>Topic Performance</h3>
+                    <div id="topicStats"></div>
+                </div>
+
+                <div class="learning-gaps">
+                    <h3>⚠️ Learning Gaps Identified</h3>
+                    <div id="learningGaps"></div>
+                </div>
+
+                <div class="recent-activity">
+                    <h3>Recent Activity</h3>
+                    <div id="recentProgress"></div>
+                </div>
+
+                <div class="achievements-display">
+                    <h3>🏅 Achievements</h3>
+                    <div id="studentAchievements"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/teacher.js"></script>
+</body>
+
+</html>

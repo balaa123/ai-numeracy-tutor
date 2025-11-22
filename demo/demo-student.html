@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Numeracy Tutor - Student Demo</title>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-color: #58cc02;
+            --error-color: #ff4b4b;
+            --warning-color: #ffc800;
+            --bg-gray: #f7f7f7;
+            --text-dark: #333;
+            --text-light: #666;
+            --border-radius: 16px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-gray);
+            color: var(--text-dark);
+        }
+
+        .screen {
+            display: none;
+            min-height: 100vh;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Dashboard */
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-gradient);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .student-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .language-selector select {
+            padding: 0.5rem 1rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .content {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .progress-section {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .progress-section h3 {
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-gradient);
+            width: 65%;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        /* Topics Grid */
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .topic-card {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .topic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .topic-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .topic-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .topic-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .topic-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .topic-level {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-practice {
+            padding: 1rem 2rem;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn-practice:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Achievements */
+        .achievements-section {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .achievements-section h3 {
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+        }
+
+        .badges-list {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #ffd89b 0%, #ffa500 100%);
+            color: white;
+            border-radius: 50px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: badgeAppear 0.5s ease;
+        }
+
+        @keyframes badgeAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Quiz Screen */
+        .quiz-header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-close {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-close:hover {
+            background: #e0e0e0;
+            transform: rotate(90deg);
+        }
+
+        .quiz-progress-bar {
+            flex: 1;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .quiz-progress-fill {
+            height: 100%;
+            background: var(--success-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .quiz-counter {
+            font-weight: bold;
+            color: var(--text-light);
+        }
+
+        .quiz-content {
+            max-width: 800px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .question-section {
+            background: white;
+            padding: 3rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .question-topic {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #f0f0f0;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .question-text {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--text-dark);
+        }
+
+        .options-container {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .option-btn {
+            padding: 1.5rem;
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            border-color: #667eea;
+            transform: translateX(8px);
+        }
+
+        .option-btn.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+        }
+
+        .option-btn.correct {
+            border-color: var(--success-color);
+            background: #58cc0215;
+        }
+
+        .option-btn.wrong {
+            border-color: var(--error-color);
+            background: #ff4b4b15;
+        }
+
+        .quiz-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+
+        .btn-hint {
+            padding: 1rem 2rem;
+            background: var(--warning-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-check {
+            flex: 1;
+            padding: 1rem 2rem;
+            background: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-check:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .hint-box {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #fff8e1;
+            border-left: 4px solid var(--warning-color);
+            border-radius: 8px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .hint-box.hidden {
+            display: none;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Feedback Panel */
+        .feedback-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 2rem;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 20px 20px 0 0;
+            animation: slideUp 0.3s ease;
+        }
+
+        .feedback-panel.hidden {
+            display: none;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .feedback-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .feedback-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        #feedbackTitle {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        #feedbackMessage {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .explanation-box {
+            background: #f0f0f0;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .explanation-box.hidden {
+            display: none;
+        }
+
+        .btn-continue {
+            padding: 1.2rem 3rem;
+            background: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Results Screen */
+        .results-container {
+            max-width: 600px;
+            margin: 4rem auto;
+            padding: 3rem;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .trophy {
+            font-size: 6rem;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .results-container h1 {
+            font-size: 2.5rem;
+            margin: 2rem 0;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .results-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .result-value {
+            font-size: 3rem;
+            font-weight: bold;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .result-label {
+            color: var(--text-light);
+            margin-top: 0.5rem;
+        }
+
+        .new-badges-section {
+            background: linear-gradient(135deg, #ffd89b 0%, #ffa500 100%);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .new-badges-section.hidden {
+            display: none;
+        }
+
+        .results-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            padding: 1rem 2rem;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            padding: 1rem 2rem;
+            background: #f0f0f0;
+            color: var(--text-dark);
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .demo-banner {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="demo-banner">
+        🎮 DEMO MODE - No installation required! This is a preview with mock data.
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="dashboard" class="screen active">
+        <div class="header">
+            <div class="user-info">
+                <div class="avatar">👤</div>
+                <div>
+                    <div class="student-name">Demo Student</div>
+                    <div class="language-selector">
+                        <select id="languageSwitch" onchange="changeLanguage()">
+                            <option value="en">English</option>
+                            <option value="hi">हिंदी</option>
+                            <option value="ta">தமிழ்</option>
+                            <option value="te">తెలుగు</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat">
+                    <span class="stat-icon">⭐</span>
+                    <div>
+                        <div class="stat-label">Points</div>
+                        <div class="stat-value" id="totalPoints">150</div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <span class="stat-icon">🔥</span>
+                    <div>
+                        <div class="stat-label">Streak</div>
+                        <div class="stat-value" id="streakDays">5</div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <span class="stat-icon">🏆</span>
+                    <div>
+                        <div class="stat-label">Level</div>
+                        <div class="stat-value" id="currentLevel">3</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="progress-section">
+                <h3>Your Progress</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <p class="progress-text">Keep going! 🎯</p>
+            </div>
+
+            <div class="topics-grid">
+                <div class="topic-card" onclick="startPractice('addition')">
+                    <div class="topic-icon">➕</div>
+                    <h3>Addition</h3>
+                    <div class="topic-level">Level 2</div>
+                    <button class="btn-practice">Practice</button>
+                </div>
+
+                <div class="topic-card" onclick="startPractice('subtraction')">
+                    <div class="topic-icon">➖</div>
+                    <h3>Subtraction</h3>
+                    <div class="topic-level">Level 1</div>
+                    <button class="btn-practice">Practice</button>
+                </div>
+
+                <div class="topic-card" onclick="startPractice('multiplication')">
+                    <div class="topic-icon">✖️</div>
+                    <h3>Multiplication</h3>
+                    <div class="topic-level">Level 1</div>
+                    <button class="btn-practice">Practice</button>
+                </div>
+
+                <div class="topic-card" onclick="startPractice('division')">
+                    <div class="topic-icon">➗</div>
+                    <h3>Division</h3>
+                    <div class="topic-level">Level 1</div>
+                    <button class="btn-practice">Practice</button>
+                </div>
+            </div>
+
+            <div class="achievements-section">
+                <h3>🏅 Achievements</h3>
+                <div class="badges-list">
+                    <div class="badge">🏅 First Step</div>
+                    <div class="badge">🏅 Math Explorer</div>
+                    <div class="badge">🏅 Perfect Five</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quizScreen" class="screen">
+        <div class="quiz-header">
+            <button class="btn-close" onclick="backToDashboard()">✕</button>
+            <div class="quiz-progress-bar">
+                <div class="quiz-progress-fill" id="quizProgressFill"></div>
+            </div>
+            <div class="quiz-counter" id="quizCounter">1/5</div>
+        </div>
+
+        <div class="quiz-content">
+            <div class="question-section">
+                <div class="question-topic" id="questionTopic">Addition</div>
+                <h2 class="question-text" id="questionText">5 + 3 = ?</h2>
+
+                <div id="optionsContainer" class="options-container"></div>
+
+                <div class="quiz-actions">
+                    <button class="btn-hint" id="hintBtn" onclick="showHint()">💡 Hint</button>
+                    <button class="btn-check" id="checkBtn" onclick="checkAnswer()" disabled>Check</button>
+                </div>
+
+                <div id="hintBox" class="hint-box hidden"></div>
+            </div>
+
+            <div id="feedbackPanel" class="feedback-panel hidden">
+                <div class="feedback-content">
+                    <div id="feedbackIcon" class="feedback-icon">✅</div>
+                    <h3 id="feedbackTitle">Excellent!</h3>
+                    <p id="feedbackMessage">Correct Answer!</p>
+                    <div id="explanationBox" class="explanation-box hidden"></div>
+                    <button class="btn-continue" onclick="nextQuestion()">Continue →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="resultsScreen" class="screen">
+        <div class="results-container">
+            <div class="trophy">🏆</div>
+            <h1>Great Job!</h1>
+
+            <div class="results-stats">
+                <div>
+                    <div class="result-value" id="finalScore">4/5</div>
+                    <div class="result-label">Correct</div>
+                </div>
+                <div>
+                    <div class="result-value" id="pointsEarned">+40</div>
+                    <div class="result-label">Points Earned</div>
+                </div>
+            </div>
+
+            <div id="newBadges" class="new-badges-section">
+                <h3>🎉 New Badge Earned!</h3>
+                <div style="margin-top: 1rem;">🏅 Math Champion</div>
+            </div>
+
+            <div class="results-actions">
+                <button class="btn-primary" onclick="backToDashboard()">Back to Dashboard</button>
+                <button class="btn-secondary" onclick="practiceAgain()">Practice Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data and state
+        let currentQuestionIndex = 0;
+        let selectedAnswer = null;
+        let currentTopic = '';
+
+        const questions = {
+            addition: [
+                { question: '5 + 3 = ?', options: [8, 7, 9, 6], correct: 8, hint: 'Try counting on your fingers: 5... 6, 7, 8!' },
+                { question: '12 + 7 = ?', options: [19, 18, 20, 17], correct: 19, hint: 'Think of 12 + 8 = 20, so 12 + 7 is one less!' },
+                { question: '8 + 4 = ?', options: [12, 11, 13, 10], correct: 12, hint: 'You can think of it as 8 + 2 + 2 = 10 + 2' },
+                { question: '15 + 6 = ?', options: [21, 20, 22, 19], correct: 21, hint: '15 + 5 = 20, plus 1 more!' },
+                { question: '9 + 9 = ?', options: [18, 17, 19, 16], correct: 18, hint: 'Double 9! Same as 9 × 2' }
+            ],
+            subtraction: [
+                { question: '10 - 3 = ?', options: [7, 6, 8, 5], correct: 7, hint: 'Count back from 10: 9, 8, 7!' },
+                { question: '15 - 8 = ?', options: [7, 6, 8, 9], correct: 7, hint: 'Think: what plus 8 equals 15?' }
+            ],
+            multiplication: [
+                { question: '3 × 4 = ?', options: [12, 13, 11, 14], correct: 12, hint: '3 groups of 4, or 4 + 4 + 4' },
+                { question: '5 × 5 = ?', options: [25, 24, 26, 20], correct: 25, hint: '5 fingers on each hand, both hands!' }
+            ],
+            division: [
+                { question: '12 ÷ 3 = ?', options: [4, 3, 5, 6], correct: 4, hint: '12 cookies shared with 3 friends equally' },
+                { question: '20 ÷ 4 = ?', options: [5, 4, 6, 7], correct: 5, hint: 'How many groups of 4 can you make from 20?' }
+            ]
+        };
+
+        const explanations = {
+            en: {
+                addition: 'Great job! When we add numbers, we combine them together. Think of it like putting apples in a basket!',
+                subtraction: 'Well done! Subtraction means taking away. Like eating some cookies from a jar!',
+                multiplication: 'Excellent! Multiplication is adding the same number multiple times. Like counting fingers on multiple hands!',
+                division: 'Perfect! Division is sharing equally. Like splitting candies among friends!'
+            }
+        };
+
+        function startPractice(topic) {
+            currentTopic = topic;
+            currentQuestionIndex = 0;
+            document.getElementById('dashboard').classList.remove('active');
+            document.getElementById('quizScreen').classList.add('active');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = questions[currentTopic][currentQuestionIndex];
+            document.getElementById('questionText').textContent = question.question;
+            document.getElementById('questionTopic').textContent = currentTopic.charAt(0).toUpperCase() + currentTopic.slice(1);
+            document.getElementById('quizCounter').textContent = `${currentQuestionIndex + 1}/5`;
+            document.getElementById('hintBox').classList.add('hidden');
+            document.getElementById('feedbackPanel').classList.add('hidden');
+
+            const progress = (currentQuestionIndex / 5) * 100;
+            document.getElementById('quizProgressFill').style.width = progress + '%';
+
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            question.options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = () => selectOption(btn, option);
+                container.appendChild(btn);
+            });
+
+            document.getElementById('checkBtn').disabled = true;
+            selectedAnswer = null;
+        }
+
+        function selectOption(button, answer) {
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            button.classList.add('selected');
+            selectedAnswer = answer;
+            document.getElementById('checkBtn').disabled = false;
+        }
+
+        function showHint() {
+            const question = questions[currentTopic][currentQuestionIndex];
+            const hintBox = document.getElementById('hintBox');
+            hintBox.textContent = '💡 ' + question.hint;
+            hintBox.classList.remove('hidden');
+            document.getElementById('hintBtn').disabled = true;
+        }
+
+        function checkAnswer() {
+            const question = questions[currentTopic][currentQuestionIndex];
+            const isCorrect = selectedAnswer === question.correct;
+
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.disabled = true;
+                if (parseInt(btn.textContent) === question.correct) {
+                    btn.classList.add('correct');
+                } else if (btn.classList.contains('selected') && !isCorrect) {
+                    btn.classList.add('wrong');
+                }
+            });
+
+            const feedback = document.getElementById('feedbackPanel');
+            feedback.classList.remove('hidden');
+
+            document.getElementById('feedbackIcon').textContent = isCorrect ? '✅' : '❌';
+            document.getElementById('feedbackTitle').textContent = isCorrect ? 'Excellent!' : 'Not quite!';
+            document.getElementById('feedbackMessage').textContent = isCorrect ? 'Correct Answer!' : 'Let\'s try to understand this...';
+
+            if (!isCorrect) {
+                const explanationBox = document.getElementById('explanationBox');
+                explanationBox.textContent = explanations.en[currentTopic];
+                explanationBox.classList.remove('hidden');
+            } else {
+                document.getElementById('explanationBox').classList.add('hidden');
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < 5 && currentQuestionIndex < questions[currentTopic].length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quizScreen').classList.remove('active');
+            document.getElementById('resultsScreen').classList.add('active');
+        }
+
+        function backToDashboard() {
+            document.getElementById('quizScreen').classList.remove('active');
+            document.getElementById('resultsScreen').classList.remove('active');
+            document.getElementById('dashboard').classList.add('active');
+        }
+
+        function practiceAgain() {
+            currentQuestionIndex = 0;
+            document.getElementById('resultsScreen').classList.remove('active');
+            document.getElementById('quizScreen').classList.add('active');
+            showQuestion();
+        }
+
+        function changeLanguage() {
+            const lang = document.getElementById('languageSwitch').value;
+            alert('Language switching works in the full version with AI! Selected: ' + lang);
+        }
+    </script>
+</body>
+
+</html>
